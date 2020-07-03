@@ -38,12 +38,3 @@ const kTextFieldInputDecoration = InputDecoration(
   ),
 );
 
-//const kDropDownInputDecoration = InputDecoration(
-//  icon: Icon(Icons.arrow_downward),
-//
-////  hintText: TextStyle(color: Colors.deepPurple)
-////  underline: Container(
-////    height: 2,
-////    color: Colors.deepPurpleAccent,
-////  ),
-//);

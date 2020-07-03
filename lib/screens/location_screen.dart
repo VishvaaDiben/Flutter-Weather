@@ -2,6 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:clima/utilities/constants.dart';
 import 'package:clima/services/weather.dart';
 import 'package:clima/screens/city_screen.dart';
+import 'package:clima/widgets/weatherItem.dart';
+import 'package:clima/models/foreCastData.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+
 
 class LocationScreen extends StatefulWidget {
   LocationScreen({this.locationWeather});
@@ -18,12 +23,27 @@ class _LocationScreenState extends State<LocationScreen> {
   String weatherIcon;
   String weatherMessage;
   String cityName;
+  ForecastData forecastData;
 
   @override
   void initState() {
     super.initState();
 
     updateUI(widget.locationWeather);
+    loadForecastWeather()  ;
+  }
+
+  loadForecastWeather() async {
+    final forecastResponse = await http.get(
+        'https://api.openweathermap.org/data/2.5/forecast?q=$cityName&appid=9895a789d1f377b18fb0e16958a4dd57');
+//    https://api.openweathermap.org/data/2.5/forecast?APPID=0721392c0ba0af8c410aa9394defa29e
+//    https://api.openweathermap.org/data/2.5/forecast?appid=9895a789d1f377b18fb0e16958a4dd57&units=metric
+
+    if (forecastResponse.statusCode == 200) {
+      return setState(() {
+        forecastData = new ForecastData.fromJson(jsonDecode(forecastResponse.body));
+      });
+    }
   }
 
   void updateUI(dynamic weatherData) {
@@ -35,7 +55,7 @@ class _LocationScreenState extends State<LocationScreen> {
         cityName = '';
         return;
       }
-      double temp = weatherData['main']['temp'];
+      dynamic temp = weatherData['main']['temp'];
       temperature = temp.toInt();
       var condition = weatherData['weather'][0]['id'];
       weatherIcon = weather.getWeatherIcon(condition);
@@ -58,9 +78,9 @@ class _LocationScreenState extends State<LocationScreen> {
         ),
         constraints: BoxConstraints.expand(),
         child: SafeArea(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+          child: Wrap(
+//            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -124,6 +144,19 @@ class _LocationScreenState extends State<LocationScreen> {
                   style: kMessageTextStyle,
                 ),
               ),
+              SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Container(
+                    height: 200.0,
+                    child: forecastData != null ? ListView.builder(
+                        itemCount: forecastData.list.length,
+                        scrollDirection: Axis.horizontal,
+                        itemBuilder: (context, index) => WeatherItem(weather: forecastData.list.elementAt(index))
+                    ) : Container(),
+                  ),
+                ),
+              )
             ],
           ),
         ),
